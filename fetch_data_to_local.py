@@ -8,6 +8,9 @@ import os
 # Define the path to save data temporarily
 TEMP_DATA_FILE = '/usr/local/airflow/data/posts.json'  # Path inside the container
 
+os.makedirs(os.path.dirname(TEMP_DATA_FILE), exist_ok=True)
+
+
 def fetch_data():
     url = 'https://jsonplaceholder.typicode.com/posts'  # Example API
     response = requests.get(url)
