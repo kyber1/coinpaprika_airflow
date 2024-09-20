@@ -6,7 +6,7 @@ import json
 import os
 
 # Define the path to save data temporarily
-TEMP_DATA_FILE = '/usr/local/airflow/data/posts.json'  # Path inside the container
+TEMP_DATA_FILE = '/opt/airflow/data/posts.json'  # Path inside the container
 
 os.makedirs(os.path.dirname(TEMP_DATA_FILE), exist_ok=True)
 
