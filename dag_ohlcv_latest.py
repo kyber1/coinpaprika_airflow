@@ -65,7 +65,7 @@ def process_coin_batch(**context):
         print("No batch to process at this time.")
         return
 
-    with open('/opt/airflow/dags/api_ids.txt', 'r') as f:
+    with open('/opt/airflow/dags/coinpaprika_airflow/api_ids.txt', 'r') as f:
         api_ids = [line.strip() for line in f if line.strip()]
 
     batch_size = 50
