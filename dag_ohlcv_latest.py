@@ -21,7 +21,7 @@ dag = DAG(
     'fetch_ohlcv_data',
     default_args= default_args,
     description= 'Fetch OHLCV data for the latest full day for top 100 coins in batches',
-    schedule_interval= '45 13,14 * * *',
+    schedule_interval= '35 13,14 * * *',
     catchup= False,
 )
 
@@ -65,7 +65,7 @@ def process_coin_batch(**context):
         print("No batch to process at this time.")
         return
 
-    with open('api_ids.txt', 'r') as f:
+    with open('/opt/airflow/dags/api_ids.txt', 'r') as f:
         api_ids = [line.strip() for line in f if line.strip()]
 
     batch_size = 50
