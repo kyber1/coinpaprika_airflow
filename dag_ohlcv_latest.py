@@ -7,7 +7,7 @@ import os
 
 #define arguments
 default_args = {
-    'owner': 'cpaprika_project',
+    'owner': 'airflow',
     'depends_on_past': False,
     'start_date': datetime(2024,09,28, tzinfo=timezone.utc),
     'email': ['ceo@bifrostbytes.com'],
