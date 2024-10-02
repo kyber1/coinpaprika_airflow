@@ -21,7 +21,7 @@ dag = DAG(
     'fetch_ohlcv_data',
     default_args= default_args,
     description= 'Fetch OHLCV data for the latest full day for top 100 coins in batches',
-    schedule_interval= '15 14,15 * * *',
+    schedule_interval= '25 14,15 * * *',
     catchup= False,
 )
 
@@ -50,9 +50,9 @@ def get_ohlcv_latest_data(coin_id):
 def get_batch_number(execution_date):
     hour = execution_date.hour
     match hour:
-        case 13:
-            return 1
         case 14:
+            return 1
+        case 15:
             return 2
         case _:
             return None
