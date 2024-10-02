@@ -9,7 +9,7 @@ import os
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime(2024, 10, 1, tzinfo=timezone.utc),
+    'start_date': datetime(2024, 10, 2, tzinfo=timezone.utc),
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
@@ -21,7 +21,7 @@ dag = DAG(
     'fetch_ohlcv_data',
     default_args= default_args,
     description= 'Fetch OHLCV data for the latest full day for top 100 coins in batches',
-    schedule_interval= '50 14,15 * * *',
+    schedule_interval= '55 14,15 * * *',
     catchup= False,
 )
 
