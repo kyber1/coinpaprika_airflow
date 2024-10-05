@@ -61,7 +61,8 @@ def process_coin_batch(**context):
     execution_date = context['execution_date']
     print(f'execution date: {execution_date}')
     batch_number = get_batch_number(execution_date)
-    
+    print(f'batch number {batch_number}')
+
     if batch_number is None:
         print("No batch to process at this time.")
         return
@@ -71,10 +72,6 @@ def process_coin_batch(**context):
 
     batch_size = 50
     batches = [api_ids[i:i + batch_size] for i in range(0, len(api_ids), batch_size)]
-
-    if batch_number > len(batches):
-        print(f"No batch number {batch_number} available.")
-        return
     
     coins_ids = batches[batch_number - 1]
 
