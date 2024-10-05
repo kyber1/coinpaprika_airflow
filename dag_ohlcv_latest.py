@@ -61,6 +61,7 @@ def process_coin_batch(**context):
     execution_date = context['execution_date']
     print(f'execution date: {execution_date}')
     print(f'execution hour: {execution_date.hour}')
+
     batch_number = get_batch_number(execution_date)
     print(f'batch number {batch_number}')
 
@@ -76,29 +77,29 @@ def process_coin_batch(**context):
     
     coins_ids = batches[batch_number - 1]
 
-    # all_ohlcv_data = {}
-    # for coin_id in coins_ids:
-    #     ohlcv_data = get_ohlcv_latest_data(coin_id)
-    #     if ohlcv_data:
-    #         all_ohlcv_data[coin_id] = ohlcv_data[0]
-    #         print(f"Fetched OHLCV data for {coin_id}")
-    #     else:
-    #         print(f"Skipped {coin_id} due to errors.")
+    all_ohlcv_data = {}
+    for coin_id in coins_ids:
+        ohlcv_data = get_ohlcv_latest_data(coin_id)
+        if ohlcv_data:
+            all_ohlcv_data[coin_id] = ohlcv_data[0]
+            print(f"Fetched OHLCV data for {coin_id}")
+        else:
+            print(f"Skipped {coin_id} due to errors.")
     
-    # # Get current date components
-    # now = datetime.now(timezone.utc)
-    # year = now.strftime('%Y')
-    # month = now.strftime('%m')
-    # day = now.strftime('%d')
+    # Get current date components
+    now = datetime.now(timezone.utc)
+    year = now.strftime('%Y')
+    month = now.strftime('%m')
+    day = now.strftime('%d')
     
-    # dir_path = os.path.join('/opt/airflow/data/', year, month, day) 
-    # os.makedirs(dir_path, exist_ok=True)
+    dir_path = os.path.join('/opt/airflow/data/', year, month, day) 
+    os.makedirs(dir_path, exist_ok=True)
 
-    # # Save all data to a single JSON file
-    # output_filename = os.path.join(dir_path, f'all_ohlcv_latest_batch_{batch_number}.json')
-    # with open(output_filename, 'w') as outfile:
-    #     json.dump(all_ohlcv_data, outfile, indent=4)
-    # print(f"Saved batch {batch_number} OHLCV data to {output_filename}")
+    # Save all data to a single JSON file
+    output_filename = os.path.join(dir_path, f'all_ohlcv_latest_batch_{batch_number}.json')
+    with open(output_filename, 'w') as outfile:
+        json.dump(all_ohlcv_data, outfile, indent=4)
+    print(f"Saved batch {batch_number} OHLCV data to {output_filename}")
 
 process_batch_task = PythonOperator(
     task_id='process_coin_batch',
