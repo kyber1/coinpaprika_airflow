@@ -3,9 +3,9 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta, timezone
 import requests
 import json
-import os
+from google.cloud import storage
 
-#define arguments
+# Define default arguments
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -16,16 +16,16 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-#define DAG
+# Define DAG
 dag = DAG(
-    'fetch_ohlcv_data',
-    default_args= default_args,
-    description= 'Fetch OHLCV data for the latest full day for top 100 coins in batches',
-    schedule_interval= '55 10,11 * * *',
-    catchup= False,
+    'fetch_and_upload_ohlcv_data',
+    default_args=default_args,
+    description='Fetch OHLCV data and upload to Google Cloud Storage',
+    schedule_interval='15 17,11 * * *',
+    catchup=False,
 )
 
-#free api url
+# API base URL
 base_url = "https://api.coinpaprika.com/v1"
 
 def get_ohlcv_latest_data(coin_id):
@@ -47,21 +47,14 @@ def get_ohlcv_latest_data(coin_id):
         print(f"Network error for {coin_id}: {e}")
         return None
 
-def get_batch_number():
-    current_time = datetime.now(timezone.utc) 
-    print(f'current time is : {current_time}')
-    if current_time.hour == 10:
-        return 1
+def process_and_upload_coin_batch():
+    current_time = datetime.now(timezone.utc)
+    print(f'Current time is: {current_time}')
+    if current_time.hour == 17:
+        batch_number = 1
     elif current_time.hour == 11:
-        return 2
+        batch_number = 2
     else:
-        return None
-
-def process_coin_batch(**context):
-    batch_number = get_batch_number()
-    print(f'batch number {batch_number}')
-
-    if batch_number is None:
         print("No batch to process at this time.")
         return
 
@@ -70,7 +63,7 @@ def process_coin_batch(**context):
 
     batch_size = 50
     batches = [api_ids[i:i + batch_size] for i in range(0, len(api_ids), batch_size)]
-    
+
     coins_ids = batches[batch_number - 1]
 
     all_ohlcv_data = {}
@@ -81,25 +74,36 @@ def process_coin_batch(**context):
             print(f"Fetched OHLCV data for {coin_id}")
         else:
             print(f"Skipped {coin_id} due to errors.")
-    
-    # Get current date components
+
+    if not all_ohlcv_data:
+        print("No data fetched to upload.")
+        return
+
+    # Convert data to JSON string
+    data_json = json.dumps(all_ohlcv_data, indent=4)
+
+    # Prepare GCS upload
+    project_id = 'tough-bearing-436219-r4'
+    bucket_name = 'coinpaprika_bronze'
+
+    storage_client = storage.Client(project=project_id)
+    bucket = storage_client.bucket(bucket_name)
+
+    # Create a blob name with date folders
     now = datetime.now(timezone.utc)
     year = now.strftime('%Y')
     month = now.strftime('%m')
     day = now.strftime('%d')
-    
-    dir_path = os.path.join('/opt/airflow/data/', year, month, day) 
-    os.makedirs(dir_path, exist_ok=True)
 
-    # Save all data to a single JSON file
-    output_filename = os.path.join(dir_path, f'all_ohlcv_latest_batch_{batch_number}.json')
-    with open(output_filename, 'w') as outfile:
-        json.dump(all_ohlcv_data, outfile, indent=4)
-    print(f"Saved batch {batch_number} OHLCV data to {output_filename}")
+    blob_name = f"{year}/{month}/{day}/all_ohlcv_latest_batch_{batch_number}.json"
 
-process_batch_task = PythonOperator(
-    task_id='process_coin_batch',
-    python_callable=process_coin_batch,
+    blob = bucket.blob(blob_name)
+    blob.upload_from_string(data_json, content_type='application/json')
+    print(f"Uploaded data to bucket {bucket_name} with blob name {blob_name}")
+
+process_and_upload_task = PythonOperator(
+    task_id='process_and_upload_task',
+    python_callable=process_and_upload_coin_batch,
     provide_context=True,
     dag=dag,
 )
