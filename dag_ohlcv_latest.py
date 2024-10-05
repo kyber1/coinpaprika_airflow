@@ -21,7 +21,7 @@ dag = DAG(
     'fetch_ohlcv_data',
     default_args= default_args,
     description= 'Fetch OHLCV data for the latest full day for top 100 coins in batches',
-    schedule_interval= '55 14,15 * * *',
+    schedule_interval= '12 9,10 * * *',
     catchup= False,
 )
 
