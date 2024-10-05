@@ -47,15 +47,14 @@ def get_ohlcv_latest_data(coin_id):
         print(f"Network error for {coin_id}: {e}")
         return None
 
-def get_batch_number(execution_date):
-    hour = execution_date.hour
-    match hour:
-        case 10:
-            return 1
-        case 11:
-            return 2
-        case _:
-            return None
+def get_batch_number():
+    current_time = datetime.now(timezone.utc)  # Use current system time
+    if current_time.hour == 9:
+        return 1
+    elif current_time.hour == 10:
+        return 2
+    else:
+        return None
 
 def process_coin_batch(**context):
     execution_date = context['execution_date']
