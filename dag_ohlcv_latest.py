@@ -60,7 +60,7 @@ def get_batch_number(execution_date):
 def process_coin_batch(**context):
     execution_date = context['execution_date']
     print(f'execution date: {execution_date}')
-    print(f'execution hour: {execution_date}')
+    print(f'execution hour: {execution_date.hour}')
     batch_number = get_batch_number(execution_date)
     print(f'batch number {batch_number}')
 
