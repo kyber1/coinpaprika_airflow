@@ -21,7 +21,7 @@ dag = DAG(
     'fetch_and_upload_ohlcv_data',
     default_args=default_args,
     description='Fetch OHLCV data and upload to Google Cloud Storage',
-    schedule_interval='15 17,11 * * *',
+    schedule_interval='55 10,11 * * *',
     catchup=False,
 )
 
