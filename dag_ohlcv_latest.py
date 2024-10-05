@@ -50,9 +50,9 @@ def get_ohlcv_latest_data(coin_id):
 def get_batch_number(execution_date):
     hour = execution_date.hour
     match hour:
-        case 14:
+        case 9:
             return 1
-        case 15:
+        case 10:
             return 2
         case _:
             return None
