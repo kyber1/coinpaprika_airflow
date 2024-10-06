@@ -50,7 +50,7 @@ def get_ohlcv_latest_data(coin_id):
 def process_and_upload_coin_batch():
     current_time = datetime.now(timezone.utc)
     print(f'Current time is: {current_time}')
-    if current_time.hour == 17:
+    if current_time.hour == 10:
         batch_number = 1
     elif current_time.hour == 11:
         batch_number = 2
