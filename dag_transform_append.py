@@ -1,7 +1,6 @@
 from airflow import DAG
+from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.operators.python import PythonOperator
-from airflow.models import DagRun
-from airflow.utils.state import State
 from datetime import datetime, timedelta, timezone
 
 default_args = {
@@ -22,25 +21,23 @@ dag = DAG(
     catchup=False,
 )
 
-def check_two_runs_success(session=None, **kwargs):
-    dag_id = 'fetch_and_upload_ohlcv_data'
-    today = datetime.now(timezone.utc).date()
-    
-    successful_runs_today = session.query(DagRun).filter(
-        DagRun.dag_id == dag_id,
-        DagRun.execution_date >= datetime(today.year, today.month, today.day, tzinfo=timezone.utc),
-        DagRun.state == State.SUCCESS
-    ).count()
-    
-    if successful_runs_today >= 2:
-        return True
-    else:
-        raise ValueError("Both required DAG runs are not yet successful.")
+wait_for_first_run = ExternalTaskSensor(
+    task_id='wait_for_first_run',
+    external_dag_id='fetch_and_upload_ohlcv_data',
+    external_task_id='process_and_upload_task',
+    execution_date_fn=lambda x: x.replace(hour=10, minute=55),
+    mode='poke',
+    timeout=7200, 
+    dag=dag,
+)
 
-check_runs = PythonOperator(
-    task_id='check_two_runs_success',
-    python_callable=check_two_runs_success,
-    provide_context=True,
+wait_for_second_run = ExternalTaskSensor(
+    task_id='wait_for_second_run',
+    external_dag_id='fetch_and_upload_ohlcv_data',
+    external_task_id='process_and_upload_task',
+    execution_date_fn=lambda x: x.replace(hour=11, minute=55),
+    mode='poke',
+    timeout=7200, 
     dag=dag,
 )
 
@@ -62,4 +59,4 @@ append_parquet_task = PythonOperator(
     dag=dag,
 )
 
-check_runs >> download_jsons_task >> append_parquet_task
+(wait_for_first_run >> wait_for_second_run) >> download_jsons_task >> append_parquet_task
