@@ -21,17 +21,15 @@ dag = DAG(
     catchup=False,
 )
 
-def execution_date_fn_run1(context):
-    return context['execution_date'].replace(hour=10, minute=55, second=0, microsecond=0)
-
-def execution_date_fn_run2(context):
-    return context['execution_date'].replace(hour=11, minute=55, second=0, microsecond=0)
+# Hardcoded execution dates for the two runs to wait for
+execution_date_run1 = datetime(2024, 10, 28, 10, 55, tzinfo=timezone.utc)
+execution_date_run2 = datetime(2024, 10, 28, 11, 55, tzinfo=timezone.utc)
 
 wait_for_fetch_data_run1 = ExternalTaskSensor(
     task_id='wait_for_fetch_data_run1',
     external_dag_id='fetch_and_upload_ohlcv_data',
     external_task_id='process_and_upload_task',
-    execution_date_fn=execution_date_fn_run1,
+    execution_date=execution_date_run1,
     mode='reschedule',
     timeout=600,
     allowed_states=['success'],
@@ -43,7 +41,7 @@ wait_for_fetch_data_run2 = ExternalTaskSensor(
     task_id='wait_for_fetch_data_run2',
     external_dag_id='fetch_and_upload_ohlcv_data',
     external_task_id='process_and_upload_task',
-    execution_date_fn=execution_date_fn_run2,
+    execution_date=execution_date_run2,
     mode='reschedule',
     timeout=600,
     allowed_states=['success'],
