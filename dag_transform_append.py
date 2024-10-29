@@ -26,9 +26,14 @@ def check_two_runs_success(**kwargs):
     dag_id = 'fetch_and_upload_ohlcv_data'
     today = datetime.now(timezone.utc).date()
     
-    successful_runs = DagRun.find(dag_id=dag_id, execution_date__date=today, state=State.SUCCESS)
-    
-    if len(successful_runs) >= 2:
+    all_runs = DagRun.find(dag_id=dag_id)
+
+    successful_runs_today = [
+        run for run in all_runs 
+        if run.state == State.SUCCESS and run.execution_date.date() == today
+    ]
+
+    if len(successful_runs_today) >= 2:
         return True
     else:
         raise ValueError("Both required DAG runs are not yet successful.")
