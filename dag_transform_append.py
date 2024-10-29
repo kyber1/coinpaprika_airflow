@@ -1,9 +1,9 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.models import DagRun
+from airflow.utils.state import State
 from datetime import datetime, timedelta, timezone
 
-# Default arguments for the DAG
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -15,21 +15,28 @@ default_args = {
 }
 
 dag = DAG(
-    'process_and_append_parquet',
+    'process_and_append_parq',
     default_args=default_args,
     description='DAG to process and append data',
-    schedule_interval="0 12 * * *", 
+    schedule_interval="59 11 * * *", 
     catchup=False,
 )
 
+def check_two_runs_success(**kwargs):
+    dag_id = 'fetch_and_upload_ohlcv_data'
+    today = datetime.now(timezone.utc).date()
+    
+    successful_runs = DagRun.find(dag_id=dag_id, execution_date__date=today, state=State.SUCCESS)
+    
+    if len(successful_runs) >= 2:
+        return True
+    else:
+        raise ValueError("Both required DAG runs are not yet successful.")
 
-wait_for_download = ExternalTaskSensor(
-    task_id='wait_for_download',
-    external_dag_id='fetch_and_upload_ohlcv_data', 
-    external_task_id='process_and_upload_task',     
-    mode='poke',
-    poke_interval=60,  
-    timeout=60 * 60,   
+check_runs = PythonOperator(
+    task_id='check_two_runs_success',
+    python_callable=check_two_runs_success,
+    provide_context=True,
     dag=dag,
 )
 
@@ -51,4 +58,4 @@ append_parquet_task = PythonOperator(
     dag=dag,
 )
 
-wait_for_download >> download_jsons_task >> append_parquet_task
+check_runs >> download_jsons_task >> append_parquet_task
