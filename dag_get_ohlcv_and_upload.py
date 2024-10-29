@@ -22,12 +22,10 @@ dag = DAG(
 )
 
 def execution_date_fn_run1(context):
-    execution_date = context['execution_date'].replace(hour=10, minute=55, second=0, microsecond=0)
-    return execution_date
+    return context['execution_date'].replace(hour=10, minute=55, second=0, microsecond=0)
 
 def execution_date_fn_run2(context):
-    execution_date = context['execution_date'].replace(hour=11, minute=55, second=0, microsecond=0)
-    return execution_date
+    return context['execution_date'].replace(hour=11, minute=55, second=0, microsecond=0)
 
 wait_for_fetch_data_run1 = ExternalTaskSensor(
     task_id='wait_for_fetch_data_run1',
