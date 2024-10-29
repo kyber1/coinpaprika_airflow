@@ -32,7 +32,7 @@ def execution_date_fn_run2(context):
 wait_for_fetch_data_run1 = ExternalTaskSensor(
     task_id='wait_for_fetch_data_run1',
     external_dag_id='fetch_and_upload_ohlcv_data',
-    external_task_id=None,
+    external_task_id='process_and_upload_task',
     execution_date_fn=execution_date_fn_run1,
     mode='reschedule',
     timeout=600,
@@ -44,7 +44,7 @@ wait_for_fetch_data_run1 = ExternalTaskSensor(
 wait_for_fetch_data_run2 = ExternalTaskSensor(
     task_id='wait_for_fetch_data_run2',
     external_dag_id='fetch_and_upload_ohlcv_data',
-    external_task_id=None,
+    external_task_id='process_and_upload_task',
     execution_date_fn=execution_date_fn_run2,
     mode='reschedule',
     timeout=600,
