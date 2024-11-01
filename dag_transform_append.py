@@ -100,7 +100,7 @@ def read_combine_and_append_to_master():
         combined_df.to_parquet(f, index=False)
         print(f"appending, writing to master parq file: {master_parquet_path}")
 
-    print("------Updated master parq fie content------")
+    print("------Updated master parq file content------")
     print(combined_df.head())
 
 
@@ -110,5 +110,4 @@ read_combine_and_append_to_master_task = PythonOperator(
     dag=dag,
 )
 
-# (wait_for_first_run >> wait_for_second_run) >> read_combine_and_append_to_master
-read_combine_and_append_to_master_task 
+(wait_for_first_run >> wait_for_second_run) >> read_combine_and_append_to_master_task 
