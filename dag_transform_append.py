@@ -44,7 +44,7 @@ wait_for_second_run = ExternalTaskSensor(
     dag=dag,
 )
 
-def read_and_combine_todays_jsons():
+def read_combine_and_append_to_master():
     project_id = 'tough-bearing-436219-r4'
     bronze_bucket_name = 'coinpaprika_bronze'
 
@@ -78,26 +78,37 @@ def read_and_combine_todays_jsons():
                 combined_data.append(entry)
                 print(f"Added entry: {entry}")
 
-    df = pd.DataFrame(combined_data)
-    print(f"Combined DataFrame:\n{df.head()}")
-    print(f"DataFrame shape: {df.shape}")
+    combined_df = pd.DataFrame(combined_data)
+    print(f"Combined DataFrame:\n{combined_df.head()}")
 
-    return df
+    print("------Reading done, moving to appending------")
 
-def append_to_parquet():
-    print("Data processed and appended to Parquet.")
+    silver_bucket_name = 'coinpaprika_silver'
+    master_parquet_path = f'gs://{silver_bucket_name}/ohlcv_data_master.parquet'
 
-read_and_combine_todays_jsons_task = PythonOperator(
-    task_id='read_and_combine_todays_jsons',
-    python_callable=read_and_combine_todays_jsons,
+    
+    if fs.exists(master_parquet_path):
+        print(f"loading master parq file: {master_parquet_path}")
+        existing_df = pd.read_parquet(master_parquet_path, filesystem=fs)
+        
+        combined_df = pd.concat([existing_df, combined_df], ignore_index=True)
+        print("data appended to df")
+    else:
+        print("no master file found")
+
+    with fs.open(master_parquet_path, 'wb') as f:
+        combined_df.to_parquet(f, index=False)
+        print(f"appending, writing to master parq file: {master_parquet_path}")
+
+    print("------Updated master parq fie content------")
+    print(combined_df.head())
+
+
+read_combine_and_append_to_master_task = PythonOperator(
+    task_id='read_combine_and_append_to_master',
+    python_callable=read_combine_and_append_to_master
     dag=dag,
 )
 
-append_parquet_task = PythonOperator(
-    task_id='append_to_parquet',
-    python_callable=append_to_parquet,
-    dag=dag,
-)
-
-# (wait_for_first_run >> wait_for_second_run) >> read_and_combine_todays_jsons_task >> append_parquet_task
-read_and_combine_todays_jsons_task >> append_parquet_task
+# (wait_for_first_run >> wait_for_second_run) >> read_combine_and_append_to_master
+read_combine_and_append_to_master_task 
