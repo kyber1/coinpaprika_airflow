@@ -99,4 +99,5 @@ append_parquet_task = PythonOperator(
     dag=dag,
 )
 
-(wait_for_first_run >> wait_for_second_run) >> read_and_combine_todays_jsons_task >> append_parquet_task
+# (wait_for_first_run >> wait_for_second_run) >> read_and_combine_todays_jsons_task >> append_parquet_task
+read_and_combine_todays_jsons_task >> append_parquet_task
