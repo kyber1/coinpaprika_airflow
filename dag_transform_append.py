@@ -106,7 +106,7 @@ def read_combine_and_append_to_master():
 
 read_combine_and_append_to_master_task = PythonOperator(
     task_id='read_combine_and_append_to_master',
-    python_callable=read_combine_and_append_to_master
+    python_callable=read_combine_and_append_to_master,
     dag=dag,
 )
 
