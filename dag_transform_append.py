@@ -44,7 +44,7 @@ wait_for_second_run = ExternalTaskSensor(
     dag=dag,
 )
 
-def download_jsons():
+def read_and_combine_todays_jsons():
     project_id = 'tough-bearing-436219-r4'
     bronze_bucket_name = 'coinpaprika_bronze'
 
@@ -87,9 +87,9 @@ def download_jsons():
 def append_to_parquet():
     print("Data processed and appended to Parquet.")
 
-download_jsons_task = PythonOperator(
-    task_id='download_jsons',
-    python_callable=download_jsons,
+read_and_combine_todays_jsons_task = PythonOperator(
+    task_id='read_and_combine_todays_jsons',
+    python_callable=read_and_combine_todays_jsons,
     dag=dag,
 )
 
@@ -99,4 +99,4 @@ append_parquet_task = PythonOperator(
     dag=dag,
 )
 
-(wait_for_first_run >> wait_for_second_run) >> download_jsons_task >> append_parquet_task
+(wait_for_first_run >> wait_for_second_run) >> read_and_combine_todays_jsons_task >> append_parquet_task
